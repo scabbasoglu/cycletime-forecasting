@@ -258,24 +258,24 @@ WorkInProgressCalculator.prototype.calculate = function () {
 //TODO: Should be private
 WorkInProgressCalculator.prototype.decideFirstAndLastDates = function () {
 
-    var firstDate = null,
-        lastDate = null;
+    var firstWorkDay = null,
+        lastWorkDay = null;
 
     this.realTaskRecordArray.forEach(function (realTaskRecord) {
 
-        if (firstDate === null || firstDate > realTaskRecord.startDate) {
+        if (firstWorkDay === null || firstWorkDay.getDate() > realTaskRecord.startDate.getDate()) {
 
-            firstDate = realTaskRecord.startDate;
+            firstWorkDay = realTaskRecord.startDate;
         }
 
-        if (lastDate === null || lastDate < realTaskRecord.endDate) {
+        if (lastWorkDay === null || lastWorkDay.getDate() < realTaskRecord.endDate.getDate()) {
 
-            lastDate = realTaskRecord.endDate;
+            lastWorkDay = realTaskRecord.endDate;
         }
     });
 
-    this.firstDate = firstDate;
-    this.lastDate = lastDate;
+    this.firstWorkDay = firstWorkDay;
+    this.lastWorkDay = lastWorkDay;
 }
 
 //TODO: Should be private
@@ -285,7 +285,7 @@ WorkInProgressCalculator.prototype.createWorkInProgressArray = function () {
         workInProgressForDate,
         dateToCalculate;
 
-    for (dateToCalculate = new Date(this.firstDate); dateToCalculate < this.lastDate; this.nextDay(dateToCalculate)) {
+    for (dateToCalculate = new Date(this.firstWorkDay.getDate()); dateToCalculate < this.lastWorkDay.getDate(); this.nextDay(dateToCalculate)) {
 
         workInProgressForDate = this.calculateWorkInProgress(dateToCalculate);
         workInProgressArray.push(workInProgressForDate);
@@ -408,18 +408,18 @@ SimulationTask.prototype.isComplete = function () {
 
 function RealTaskRecord(startDateString, endDateString) {
 
-    this.startDate = this.parseDate(startDateString);
-    this.endDate = this.parseDate(endDateString);
+    this.startDate = new WorkDay(startDateString);
+    this.endDate = new WorkDay(endDateString);
 }
 
 RealTaskRecord.prototype.wasActive = function (date) {
 
-    return this.startDate <= date && this.endDate > date;
+    return this.startDate.getDate() <= date && this.endDate.getDate() > date;
 }
 
 RealTaskRecord.prototype.getCycleTime = function () {
 
-    return this.substractDays(this.endDate, this.startDate);
+    return this.substractDays(this.endDate.getDate(), this.startDate.getDate());
 }
 
 //TODO: Extract to Date class
@@ -440,6 +440,18 @@ RealTaskRecord.prototype.parseDate = function (input) {
 
     var parts = input.split('-');
     return new Date(parts[0], parts[1] - 1, parts[2]);
+}
+
+function WorkDay(dateInString) {
+
+    var parts = dateInString.split('-');
+    this.date = new Date(parts[0], parts[1] - 1, parts[2]);
+}
+
+//TODO: Should not be used in production code.
+WorkDay.prototype.getDate = function () {
+
+    return this.date;
 }
 
 // Not Tested

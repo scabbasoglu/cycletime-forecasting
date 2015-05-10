@@ -491,3 +491,15 @@ describe("RealTaskRecord", function () {
         expect(realTaskRecord.getCycleTime()).toBe(21);
     });
 });
+
+describe("WorkDay", function () {
+
+    it("should be constructed by date string", function () {
+
+        var workDay = new WorkDay("2015-04-17");
+
+        expect(workDay.getDate().getUTCDate()).toBe(16);
+        expect(workDay.getDate().getUTCMonth()).toBe(3);
+        expect(workDay.getDate().getUTCFullYear()).toBe(2015);
+    });
+});
