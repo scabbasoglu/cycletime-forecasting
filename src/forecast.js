@@ -419,13 +419,7 @@ RealTaskRecord.prototype.wasActive = function (date) {
 
 RealTaskRecord.prototype.getCycleTime = function () {
 
-    return this.substractDays(this.endDate.getDate(), this.startDate.getDate());
-}
-
-RealTaskRecord.prototype.MS_TO_DAYS = 1 / (24 * 60 * 60 * 1000);
-RealTaskRecord.prototype.substractDays = function (date0, date1) {
-
-    return (date0.getTime() - date1.getTime()) * this.MS_TO_DAYS;
+    return this.endDate.dayDifference(this.startDate);
 }
 
 function WorkDay(dateInString) {
@@ -442,6 +436,7 @@ WorkDay.prototype.getDate = function () {
     return this.date;
 };
 
+WorkDay.prototype.MS_TO_DAYS = 1 / (24 * 60 * 60 * 1000);
 WorkDay.prototype.getNextDay = function () {
 
     var nextWorkDay = new WorkDay();
@@ -453,6 +448,11 @@ WorkDay.prototype.getNextDay = function () {
 WorkDay.prototype.isInBetween = function (startWorkDate, endWorkDate) {
 
     return startWorkDate.date <= this.date && endWorkDate.date > this.date;
+};
+
+WorkDay.prototype.dayDifference = function (dayToCompare) {
+
+    return (this.date.getTime() - dayToCompare.date.getTime()) * this.MS_TO_DAYS;
 };
 
 // Not Tested

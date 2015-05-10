@@ -528,6 +528,14 @@ describe("WorkDay", function () {
         expect(workDay.isInBetween(new WorkDay("2015-04-18"), new WorkDay("2015-04-16"))).toBe(false);
     });
 
+    it("should give dayDifference between to workdays", function () {
+
+        var firstWorkDay = new WorkDay("2015-04-17"),
+            secondWorkDay = new WorkDay("2015-04-22");
+
+        expect(secondWorkDay.dayDifference(firstWorkDay)).toBe(5);
+    });
+
     function expectDate(dateToCheck, year, month, day) {
 
         expect(dateToCheck.getDate().getDate()).toBe(day);
