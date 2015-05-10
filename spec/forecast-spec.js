@@ -502,4 +502,15 @@ describe("WorkDay", function () {
         expect(workDay.getDate().getUTCMonth()).toBe(3);
         expect(workDay.getDate().getUTCFullYear()).toBe(2015);
     });
+
+    it("should give the next day", function () {
+
+        var workDay = new WorkDay("2015-04-17");
+        var nextDay = workDay.getNextDay();
+
+        expect(nextDay.getDate().getUTCDate()).toBe(17);
+        expect(nextDay.getDate().getUTCMonth()).toBe(3);
+        expect(nextDay.getDate().getUTCFullYear()).toBe(2015);
+
+    });
 });

@@ -285,9 +285,9 @@ WorkInProgressCalculator.prototype.createWorkInProgressArray = function () {
         workInProgressForDate,
         dateToCalculate;
 
-    for (dateToCalculate = new Date(this.firstWorkDay.getDate()); dateToCalculate < this.lastWorkDay.getDate(); this.nextDay(dateToCalculate)) {
+    for (dateToCalculate = this.firstWorkDay; dateToCalculate.getDate() < this.lastWorkDay.getDate(); dateToCalculate = dateToCalculate.getNextDay()) {
 
-        workInProgressForDate = this.calculateWorkInProgress(dateToCalculate);
+        workInProgressForDate = this.calculateWorkInProgress(dateToCalculate.getDate());
         workInProgressArray.push(workInProgressForDate);
     }
 
@@ -444,14 +444,24 @@ RealTaskRecord.prototype.parseDate = function (input) {
 
 function WorkDay(dateInString) {
 
-    var parts = dateInString.split('-');
-    this.date = new Date(parts[0], parts[1] - 1, parts[2]);
+    if (dateInString) {
+        var parts = dateInString.split('-');
+        this.date = new Date(parts[0], parts[1] - 1, parts[2]);
+    }
 }
 
 //TODO: Should not be used in production code.
 WorkDay.prototype.getDate = function () {
 
     return this.date;
+}
+
+WorkDay.prototype.getNextDay = function () {
+
+    var nextWorkDay = new WorkDay();
+    nextWorkDay.date = new Date(this.date);
+    nextWorkDay.date.setDate(this.date.getDate() + 1);
+    return nextWorkDay;
 }
 
 // Not Tested
