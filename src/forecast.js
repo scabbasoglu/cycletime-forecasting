@@ -422,17 +422,10 @@ RealTaskRecord.prototype.getCycleTime = function () {
     return this.substractDays(this.endDate.getDate(), this.startDate.getDate());
 }
 
-//TODO: Extract to Date class
-WorkInProgressCalculator.prototype.nextDay = function (dateToIterate) {
-
-    dateToIterate.setDate(dateToIterate.getDate() + 1)
-}
-
-//TODO: Extract to Date class
-var MS_TO_DAYS = 1 / (24 * 60 * 60 * 1000);
+RealTaskRecord.prototype.MS_TO_DAYS = 1 / (24 * 60 * 60 * 1000);
 RealTaskRecord.prototype.substractDays = function (date0, date1) {
 
-    return (date0.getTime() - date1.getTime()) * MS_TO_DAYS;
+    return (date0.getTime() - date1.getTime()) * this.MS_TO_DAYS;
 }
 
 //TODO: Extract to Date class
