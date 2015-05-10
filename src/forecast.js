@@ -251,63 +251,61 @@ function WorkInProgressCalculator(realTaskRecordArray) {
 
 WorkInProgressCalculator.prototype.calculate = function () {
 
-    this.decideFirstAndLastDates();
-    return this.createWorkInProgressArray();
-}
+    var that = this;
+    decideFirstAndLastDates();
+    return createWorkInProgressArray();
 
-//TODO: Should be private
-WorkInProgressCalculator.prototype.decideFirstAndLastDates = function () {
+    function decideFirstAndLastDates() {
 
-    var firstWorkDay = null,
-        lastWorkDay = null;
+        var firstWorkDay = null,
+            lastWorkDay = null;
 
-    this.realTaskRecordArray.forEach(function (realTaskRecord) {
+        that.realTaskRecordArray.forEach(function (realTaskRecord) {
 
-        if (firstWorkDay === null || firstWorkDay.biggerThan(realTaskRecord.startDate)) {
+            if (firstWorkDay === null || firstWorkDay.biggerThan(realTaskRecord.startDate)) {
 
-            firstWorkDay = realTaskRecord.startDate;
-        }
+                firstWorkDay = realTaskRecord.startDate;
+            }
 
-        if (lastWorkDay === null || lastWorkDay.smallerThan(realTaskRecord.endDate)) {
+            if (lastWorkDay === null || lastWorkDay.smallerThan(realTaskRecord.endDate)) {
 
-            lastWorkDay = realTaskRecord.endDate;
-        }
-    });
+                lastWorkDay = realTaskRecord.endDate;
+            }
+        });
 
-    this.firstWorkDay = firstWorkDay;
-    this.lastWorkDay = lastWorkDay;
-}
-
-//TODO: Should be private
-WorkInProgressCalculator.prototype.createWorkInProgressArray = function () {
-
-    var workInProgressArray = [],
-        workInProgressForDate,
-        dateToCalculate;
-
-    for (dateToCalculate = this.firstWorkDay; dateToCalculate.smallerThan(this.lastWorkDay); dateToCalculate = dateToCalculate.getNextDay()) {
-
-        workInProgressForDate = this.calculateWorkInProgress(dateToCalculate);
-        workInProgressArray.push(workInProgressForDate);
+        that.firstWorkDay = firstWorkDay;
+        that.lastWorkDay = lastWorkDay;
     }
 
-    return workInProgressArray;
-}
+    function createWorkInProgressArray() {
 
-//TODO: Should be private
-WorkInProgressCalculator.prototype.calculateWorkInProgress = function (dateToCalculate) {
+        var workInProgressArray = [],
+            workInProgressForDate,
+            workDay;
 
-    var workInProgress = 0;
+        for (workDay = that.firstWorkDay; workDay.smallerThan(that.lastWorkDay); workDay = workDay.getNextDay()) {
 
-    this.realTaskRecordArray.forEach(function (realTaskRecord) {
-
-        if (realTaskRecord.wasActive(dateToCalculate)) {
-
-            workInProgress += 1;
+            workInProgressForDate = calculateWorkInProgress(workDay);
+            workInProgressArray.push(workInProgressForDate);
         }
-    });
 
-    return workInProgress;
+        return workInProgressArray;
+    }
+
+    function calculateWorkInProgress(dateToCalculate) {
+
+        var workInProgress = 0;
+
+        that.realTaskRecordArray.forEach(function (realTaskRecord) {
+
+            if (realTaskRecord.wasActive(dateToCalculate)) {
+
+                workInProgress += 1;
+            }
+        });
+
+        return workInProgress;
+    }
 }
 
 function RealTaskRecordSource(googleSpreadSheet) {
