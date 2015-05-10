@@ -293,36 +293,6 @@ describe("Bucket", function () {
     });
 });
 
-describe("RandomPicker", function () {
-
-    var sourceArray = ["a", "b", "c", "d"],
-        randomizer,
-        randomPicker;
-
-    beforeEach(function () {
-
-        randomizer = jasmine.createSpyObj("randomizer", ["random"]);
-        randomPicker = new RandomPicker(randomizer);
-    });
-
-    it("should pick first element of the array if the random number is 0", function () {
-
-        randomizer.random.and.returnValue(0);
-        expect(randomPicker.pickFromArray(sourceArray)).toBe("a");
-    });
-
-    it("should pick last element of the array if the random number is 0.99", function () {
-
-        randomizer.random.and.returnValue(0.99);
-        expect(randomPicker.pickFromArray(sourceArray)).toBe("d");
-    });
-
-    it("should pick the second element if the random number is 0.33", function () {
-
-        randomizer.random.and.returnValue(0.33);
-        expect(randomPicker.pickFromArray(sourceArray)).toBe("b");
-    });
-});
 
 describe("WorkInProgressSource", function () {
 
@@ -560,4 +530,86 @@ describe("WorkDay", function () {
         expect(dateToCheck.date.getMonth()).toBe(month - 1);
         expect(dateToCheck.date.getFullYear()).toBe(year);
     }
+});
+
+describe("Bowl", function () {
+
+    var randomPicker,
+        bowl;
+
+    beforeEach(function () {
+
+        randomPicker = jasmine.createSpyObj("randomPicker", ["pickFromArray"]);
+        bowl = new BowlFactory(randomPicker).createBowl();
+    });
+
+    it("can pick a random element of it's content", function () {
+
+        bowl.add("a");
+        bowl.add("b");
+        bowl.add("c");
+
+        randomPicker.pickFromArray.and.returnValue("b");
+
+        var picked = bowl.pick();
+
+        expect(randomPicker.pickFromArray).toHaveBeenCalledWith(["a", "b", "c"]);
+        expect(picked).toBe("b");
+    });
+
+    it("can pick a random array of elements of it's content", function () {
+
+        bowl.add("a");
+        bowl.add("b");
+        bowl.add("c");
+
+        var randomArray = ["b", "a", "c", "a"];
+        randomPicker.pickFromArray.and.callFake(function () {
+
+            return randomArray.shift();
+        });
+
+        var pickedArray = bowl.pickMultiple(4);
+
+        expect(randomPicker.pickFromArray).toHaveBeenCalledWith(["a", "b", "c"]);
+        expect(randomPicker.pickFromArray.calls.count()).toBe(4);
+        expect(pickedArray).toEqual(["b", "a", "c", "a"]);
+    });
+
+    it("should throw a range error if empty", function () {
+
+        expect(bowl.pick).toThrow();
+        expect(bowl.pickMultiple.bind(bowl, 2)).toThrow();
+    });
+});
+
+describe("RandomPicker", function () {
+
+    var sourceArray = ["a", "b", "c", "d"],
+        randomizer,
+        randomPicker;
+
+    beforeEach(function () {
+
+        randomizer = jasmine.createSpyObj("randomizer", ["random"]);
+        randomPicker = new RandomPicker(randomizer);
+    });
+
+    it("should pick first element of the array if the random number is 0", function () {
+
+        randomizer.random.and.returnValue(0);
+        expect(randomPicker.pickFromArray(sourceArray)).toBe("a");
+    });
+
+    it("should pick last element of the array if the random number is 0.99", function () {
+
+        randomizer.random.and.returnValue(0.99);
+        expect(randomPicker.pickFromArray(sourceArray)).toBe("d");
+    });
+
+    it("should pick the second element if the random number is 0.33", function () {
+
+        randomizer.random.and.returnValue(0.33);
+        expect(randomPicker.pickFromArray(sourceArray)).toBe("b");
+    });
 });

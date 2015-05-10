@@ -7,7 +7,7 @@ function initializePage() {
 
 function runSimulation() {
 
-    var AMOUNT_OF_SIMULATIONS = 100,
+    var AMOUNT_OF_SIMULATIONS = 600,
         SPREAD_SHEET_KEY = "1b1P-4CYgJwleJuNgsylD7yPjyIFuMkL1ZSRsFKFdofg",
         estimatedDays = parseInt($("#estimated-days").val()),
         amountOfStories = parseInt($("#number-of-stories").val()),
@@ -172,7 +172,9 @@ Scenario.prototype.isComplete = function () {
     return isComplete;
 };
 
-// TODO: Bucket should not be using source, instead it should be a wrapper created by source
+
+
+// TODO: Will be replaced by Bowl
 function Bucket(randomPicker, source) {
 
     this.randomPicker = randomPicker;
@@ -215,17 +217,6 @@ Bucket.prototype.pickArray = function (arraySize, onPick) {
         onPick(pickedArray);
     });
 };
-
-function RandomPicker(randomizer) {
-
-    this.randomizer = randomizer;
-}
-
-RandomPicker.prototype.pickFromArray = function (sourceArray) {
-
-    var randomIndex = Math.floor(this.randomizer.random() * sourceArray.length);
-    return sourceArray[randomIndex];
-}
 
 function WorkInProgressSource(realTaskRecordSource) {
 
@@ -308,6 +299,43 @@ WorkInProgressCalculator.prototype.calculate = function () {
     }
 }
 
+function SimulationTaskSource(realTaskRecordSource) {
+
+    this.realTaskRecordSource = realTaskRecordSource;
+}
+
+SimulationTaskSource.prototype.readArray = function (onReadComplete) {
+
+    this.realTaskRecordSource.readRecordArray(function (realTaskRecordArray) {
+
+        var simulationTaskArray = [];
+
+        realTaskRecordArray.forEach(function (realTaskRecord) {
+
+            var simulationTask = new SimulationTask(realTaskRecord.getCycleTime());
+            simulationTaskArray.push(simulationTask);
+        });
+
+        onReadComplete(simulationTaskArray);
+    });
+};
+
+function SimulationTask(cycleTime) {
+
+    this.cycleTime = cycleTime;
+    this.currentProgress = 0;
+}
+
+SimulationTask.prototype.progressOneDay = function () {
+
+    this.currentProgress += 1;
+};
+
+SimulationTask.prototype.isComplete = function () {
+
+    return this.currentProgress >= this.cycleTime;
+};
+
 function RealTaskRecordSource(googleSpreadSheet) {
 
     this.googleSpreadSheet = googleSpreadSheet;
@@ -365,43 +393,6 @@ RealTaskRecordSource.prototype.readRecordArray = function (onReadComplete) {
 
         return realTaskRecordMap;
     }
-};
-
-function SimulationTaskSource(realTaskRecordSource) {
-
-    this.realTaskRecordSource = realTaskRecordSource;
-}
-
-SimulationTaskSource.prototype.readArray = function (onReadComplete) {
-
-    this.realTaskRecordSource.readRecordArray(function (realTaskRecordArray) {
-
-        var simulationTaskArray = [];
-
-        realTaskRecordArray.forEach(function (realTaskRecord) {
-
-            var simulationTask = new SimulationTask(realTaskRecord.getCycleTime());
-            simulationTaskArray.push(simulationTask);
-        });
-
-        onReadComplete(simulationTaskArray);
-    });
-};
-
-function SimulationTask(cycleTime) {
-
-    this.cycleTime = cycleTime;
-    this.currentProgress = 0;
-}
-
-SimulationTask.prototype.progressOneDay = function () {
-
-    this.currentProgress += 1;
-};
-
-SimulationTask.prototype.isComplete = function () {
-
-    return this.currentProgress >= this.cycleTime;
 };
 
 function RealTaskRecord(startDateString, endDateString) {
@@ -489,3 +480,67 @@ GoogleSpreadSheet.prototype.readCellArray = function (onReadComplete) {
         onReadComplete(cellArray);
     }
 };
+
+function BowlFactory(randomPicker) {
+
+    this.randomPicker = randomPicker;
+}
+
+BowlFactory.prototype.createBowl = function () {
+
+    return new Bowl(this.randomPicker);
+}
+
+function Bowl(randomPicker) {
+
+    this.randomPicker = randomPicker;
+    this.contentArray = [];
+}
+
+Bowl.prototype.add = function (objectToAdd) {
+
+    this.contentArray.push(objectToAdd);
+}
+
+Bowl.prototype.pick = function () {
+
+    this.assertNotEmpty();
+
+    return this.randomPicker.pickFromArray(this.contentArray);
+}
+
+Bowl.prototype.pickMultiple = function (amount) {
+
+    var pickIndex,
+        picked,
+        pickedArray = [];
+
+    this.assertNotEmpty();
+
+    for (pickIndex = 0; pickIndex < amount; pickIndex += 1) {
+
+        var picked = this.randomPicker.pickFromArray(this.contentArray);
+        pickedArray.push(picked);
+    }
+
+    return pickedArray;
+}
+
+Bowl.prototype.assertNotEmpty = function () {
+
+    if (this.contentArray.length === 0) {
+
+        throw new Error("Trying to pick from an empty bowl");
+    }
+}
+
+function RandomPicker(randomizer) {
+
+    this.randomizer = randomizer;
+}
+
+RandomPicker.prototype.pickFromArray = function (sourceArray) {
+
+    var randomIndex = Math.floor(this.randomizer.random() * sourceArray.length);
+    return sourceArray[randomIndex];
+}
