@@ -556,8 +556,8 @@ describe("WorkDay", function () {
 
     function expectDate(dateToCheck, year, month, day) {
 
-        expect(dateToCheck.getDate().getDate()).toBe(day);
-        expect(dateToCheck.getDate().getMonth()).toBe(month - 1);
-        expect(dateToCheck.getDate().getFullYear()).toBe(year);
+        expect(dateToCheck.date.getDate()).toBe(day);
+        expect(dateToCheck.date.getMonth()).toBe(month - 1);
+        expect(dateToCheck.date.getFullYear()).toBe(year);
     }
 });

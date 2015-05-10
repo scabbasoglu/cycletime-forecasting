@@ -430,12 +430,6 @@ function WorkDay(dateInString) {
     }
 }
 
-//TODO: Should not be used in production code.
-WorkDay.prototype.getDate = function () {
-
-    return this.date;
-};
-
 WorkDay.prototype.MS_TO_DAYS = 1 / (24 * 60 * 60 * 1000);
 WorkDay.prototype.getNextDay = function () {
 
