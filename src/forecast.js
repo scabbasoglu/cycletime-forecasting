@@ -448,7 +448,7 @@ WorkDay.prototype.biggerThan = function (dayToCompare) {
     return this.date > dayToCompare.date;
 };
 
-// Not Tested
+// Not Under Unit Test Coverage
 function GoogleSpreadSheet(spreadSheetKey) {
 
     this.spreadsheetUrl = "https://spreadsheets.google.com/feeds/cells/" +
@@ -456,7 +456,7 @@ function GoogleSpreadSheet(spreadSheetKey) {
         "/od6/public/values?alt=json-in-script&callback=?";
 }
 
-// Not Tested
+// Not Under Unit Test Coverage
 GoogleSpreadSheet.prototype.readCellArray = function (onReadComplete) {
 
     $.getJSON(this.spreadsheetUrl, {}, onJsonRead);
