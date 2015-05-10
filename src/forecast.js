@@ -287,7 +287,7 @@ WorkInProgressCalculator.prototype.createWorkInProgressArray = function () {
 
     for (dateToCalculate = this.firstWorkDay; dateToCalculate.getDate() < this.lastWorkDay.getDate(); dateToCalculate = dateToCalculate.getNextDay()) {
 
-        workInProgressForDate = this.calculateWorkInProgress(dateToCalculate.getDate());
+        workInProgressForDate = this.calculateWorkInProgress(dateToCalculate);
         workInProgressArray.push(workInProgressForDate);
     }
 
@@ -414,7 +414,7 @@ function RealTaskRecord(startDateString, endDateString) {
 
 RealTaskRecord.prototype.wasActive = function (date) {
 
-    return this.startDate.getDate() <= date && this.endDate.getDate() > date;
+    return date.isInBetween(this.startDate, this.endDate);
 }
 
 RealTaskRecord.prototype.getCycleTime = function () {
@@ -426,13 +426,6 @@ RealTaskRecord.prototype.MS_TO_DAYS = 1 / (24 * 60 * 60 * 1000);
 RealTaskRecord.prototype.substractDays = function (date0, date1) {
 
     return (date0.getTime() - date1.getTime()) * this.MS_TO_DAYS;
-}
-
-//TODO: Extract to Date class
-RealTaskRecord.prototype.parseDate = function (input) {
-
-    var parts = input.split('-');
-    return new Date(parts[0], parts[1] - 1, parts[2]);
 }
 
 function WorkDay(dateInString) {
@@ -447,7 +440,7 @@ function WorkDay(dateInString) {
 WorkDay.prototype.getDate = function () {
 
     return this.date;
-}
+};
 
 WorkDay.prototype.getNextDay = function () {
 
@@ -455,7 +448,12 @@ WorkDay.prototype.getNextDay = function () {
     nextWorkDay.date = new Date(this.date);
     nextWorkDay.date.setDate(this.date.getDate() + 1);
     return nextWorkDay;
-}
+};
+
+WorkDay.prototype.isInBetween = function (startWorkDate, endWorkDate) {
+
+    return startWorkDate.date <= this.date && endWorkDate.date > this.date;
+};
 
 // Not Tested
 function GoogleSpreadSheet(spreadSheetKey) {

@@ -476,12 +476,12 @@ describe("RealTaskRecord", function () {
 
         var realTaskRecord = new RealTaskRecord("2015-04-10", "2015-05-01");
 
-        expect(realTaskRecord.wasActive(new Date("2015-04-09"))).toBe(false);
-        expect(realTaskRecord.wasActive(new Date("2015-04-10"))).toBe(true);
-        expect(realTaskRecord.wasActive(new Date("2015-04-20"))).toBe(true);
-        expect(realTaskRecord.wasActive(new Date("2015-04-30"))).toBe(true);
-        expect(realTaskRecord.wasActive(new Date("2015-05-01"))).toBe(false);
-        expect(realTaskRecord.wasActive(new Date("2015-05-02"))).toBe(false);
+        expect(realTaskRecord.wasActive(new WorkDay("2015-04-09"))).toBe(false);
+        expect(realTaskRecord.wasActive(new WorkDay("2015-04-10"))).toBe(true);
+        expect(realTaskRecord.wasActive(new WorkDay("2015-04-20"))).toBe(true);
+        expect(realTaskRecord.wasActive(new WorkDay("2015-04-30"))).toBe(true);
+        expect(realTaskRecord.wasActive(new WorkDay("2015-05-01"))).toBe(false);
+        expect(realTaskRecord.wasActive(new WorkDay("2015-05-02"))).toBe(false);
     });
 
     it("should create cycle time using start and the end dates", function () {
@@ -498,9 +498,7 @@ describe("WorkDay", function () {
 
         var workDay = new WorkDay("2015-04-17");
 
-        expect(workDay.getDate().getUTCDate()).toBe(16);
-        expect(workDay.getDate().getUTCMonth()).toBe(3);
-        expect(workDay.getDate().getUTCFullYear()).toBe(2015);
+        expectDate(workDay, 2015, 4, 17);
     });
 
     it("should give the next day", function () {
@@ -508,9 +506,32 @@ describe("WorkDay", function () {
         var workDay = new WorkDay("2015-04-17");
         var nextDay = workDay.getNextDay();
 
-        expect(nextDay.getDate().getUTCDate()).toBe(17);
-        expect(nextDay.getDate().getUTCMonth()).toBe(3);
-        expect(nextDay.getDate().getUTCFullYear()).toBe(2015);
-
+        expectDate(nextDay, 2015, 4, 18);
     });
+
+    it("next day should successfully move to next year", function () {
+
+        var workDay = new WorkDay("2015-12-31");
+        var nextDay = workDay.getNextDay();
+
+        expectDate(nextDay, 2016, 1, 1);
+    });
+
+    it("in between should return true if date is bigger and equal to first date and smaller than the second", function () {
+
+        var workDay = new WorkDay("2015-04-17");
+
+        expect(workDay.isInBetween(new WorkDay("2015-04-16"), new WorkDay("2015-04-18"))).toBe(true);
+        expect(workDay.isInBetween(new WorkDay("2015-04-17"), new WorkDay("2015-04-18"))).toBe(true);
+        expect(workDay.isInBetween(new WorkDay("2015-04-16"), new WorkDay("2015-04-17"))).toBe(false);
+        expect(workDay.isInBetween(new WorkDay("2015-04-18"), new WorkDay("2015-04-19"))).toBe(false);
+        expect(workDay.isInBetween(new WorkDay("2015-04-18"), new WorkDay("2015-04-16"))).toBe(false);
+    });
+
+    function expectDate(dateToCheck, year, month, day) {
+
+        expect(dateToCheck.getDate().getDate()).toBe(day);
+        expect(dateToCheck.getDate().getMonth()).toBe(month - 1);
+        expect(dateToCheck.getDate().getFullYear()).toBe(year);
+    }
 });
