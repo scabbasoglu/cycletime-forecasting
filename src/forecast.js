@@ -263,12 +263,12 @@ WorkInProgressCalculator.prototype.decideFirstAndLastDates = function () {
 
     this.realTaskRecordArray.forEach(function (realTaskRecord) {
 
-        if (firstWorkDay === null || firstWorkDay.getDate() > realTaskRecord.startDate.getDate()) {
+        if (firstWorkDay === null || firstWorkDay.biggerThan(realTaskRecord.startDate)) {
 
             firstWorkDay = realTaskRecord.startDate;
         }
 
-        if (lastWorkDay === null || lastWorkDay.getDate() < realTaskRecord.endDate.getDate()) {
+        if (lastWorkDay === null || lastWorkDay.smallerThan(realTaskRecord.endDate)) {
 
             lastWorkDay = realTaskRecord.endDate;
         }
@@ -285,7 +285,7 @@ WorkInProgressCalculator.prototype.createWorkInProgressArray = function () {
         workInProgressForDate,
         dateToCalculate;
 
-    for (dateToCalculate = this.firstWorkDay; dateToCalculate.getDate() < this.lastWorkDay.getDate(); dateToCalculate = dateToCalculate.getNextDay()) {
+    for (dateToCalculate = this.firstWorkDay; dateToCalculate.smallerThan(this.lastWorkDay); dateToCalculate = dateToCalculate.getNextDay()) {
 
         workInProgressForDate = this.calculateWorkInProgress(dateToCalculate);
         workInProgressArray.push(workInProgressForDate);
@@ -447,12 +447,22 @@ WorkDay.prototype.getNextDay = function () {
 
 WorkDay.prototype.isInBetween = function (startWorkDate, endWorkDate) {
 
-    return startWorkDate.date <= this.date && endWorkDate.date > this.date;
+    return startWorkDate.date <= this.date && this.date < endWorkDate.date;
 };
 
 WorkDay.prototype.dayDifference = function (dayToCompare) {
 
     return (this.date.getTime() - dayToCompare.date.getTime()) * this.MS_TO_DAYS;
+};
+
+WorkDay.prototype.smallerThan = function (dayToCompare) {
+
+    return this.date < dayToCompare.date;
+};
+
+WorkDay.prototype.biggerThan = function (dayToCompare) {
+
+    return this.date > dayToCompare.date;
 };
 
 // Not Tested

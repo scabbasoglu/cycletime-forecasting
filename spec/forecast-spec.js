@@ -536,6 +536,24 @@ describe("WorkDay", function () {
         expect(secondWorkDay.dayDifference(firstWorkDay)).toBe(5);
     });
 
+    it("smaller than", function () {
+
+        var workDay = new WorkDay("2015-04-17");
+
+        expect(workDay.smallerThan(new WorkDay("2015-04-16"))).toBe(false);
+        expect(workDay.smallerThan(new WorkDay("2015-04-17"))).toBe(false);
+        expect(workDay.smallerThan(new WorkDay("2015-04-18"))).toBe(true);
+    });
+
+    it("bigger than", function () {
+
+        var workDay = new WorkDay("2015-04-17");
+
+        expect(workDay.biggerThan(new WorkDay("2015-04-16"))).toBe(true);
+        expect(workDay.biggerThan(new WorkDay("2015-04-17"))).toBe(false);
+        expect(workDay.biggerThan(new WorkDay("2015-04-18"))).toBe(false);
+    });
+
     function expectDate(dateToCheck, year, month, day) {
 
         expect(dateToCheck.getDate().getDate()).toBe(day);
