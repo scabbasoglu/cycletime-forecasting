@@ -206,19 +206,19 @@ describe("ScenarioGenerator", function () {
         var maxWorkInProgress = 3,
             amountOfStories = 5,
             simulationTaskArray = ["user-story-0", "user-story-1"],
-            workInProgressSource = jasmine.createSpyObj("workInProgressSource", ["readArray"]),
-            simulationTaskSource = jasmine.createSpyObj("simulationTaskSource", ["readArray"]),
+            workInProgressSource = jasmine.createSpyObj("workInProgressSource", ["readBowl"]),
+            simulationTaskSource = jasmine.createSpyObj("simulationTaskSource", ["readBowl"]),
             fakeBowl = jasmine.createSpyObj("workInProgressBowl", ["pick", "pickMultiple"]),
             onGenerationComplete = jasmine.createSpy("onGenerationComplete"),
             scenarioGenerator = new ScenarioGenerator(FakeScenario, workInProgressSource, simulationTaskSource, amountOfStories);
 
-        workInProgressSource.readArray.and.callFake(function (onReadComplete) {
+        workInProgressSource.readBowl.and.callFake(function (onReadComplete) {
 
             onReadComplete(fakeBowl);
         });
         fakeBowl.pick.and.returnValue(maxWorkInProgress);
 
-        simulationTaskSource.readArray.and.callFake(function (onReadComplete) {
+        simulationTaskSource.readBowl.and.callFake(function (onReadComplete) {
 
             onReadComplete(fakeBowl);
         });
@@ -238,65 +238,6 @@ describe("ScenarioGenerator", function () {
         this.simulationTaskArray = simulationTaskArray;
     }
 });
-
-describe("Bucket", function () {
-
-    var onPick,
-        sourceArray = [1, 2, 3, 4, 5],
-        randomPicker,
-        source = {
-
-            readArray: function (onRead) {
-
-                onRead(sourceArray);
-            }
-        },
-        bucket;
-
-    beforeEach(function () {
-
-        onPick = jasmine.createSpy("onPick");
-        randomPicker = jasmine.createSpyObj("randomPicker", ["pickFromArray"]);
-        bucket = new Bucket(randomPicker, source);
-    });
-
-    xit("should pick a random value provided by the source", function () {
-
-        randomPicker.pickFromArray.and.returnValue(3);
-
-        bucket.pick(onPick);
-
-        expect(randomPicker.pickFromArray).toHaveBeenCalledWith(sourceArray);
-        expect(onPick).toHaveBeenCalledWith(3);
-    });
-
-    xit("should pick an array of values from source", function () {
-
-        var randomArray = [1, 3, 5];
-        randomPicker.pickFromArray.and.callFake(function () {
-
-            var randomValue = randomArray.shift();
-            return randomValue;
-        });
-
-        bucket.pickArray(3, onPick);
-
-        expect(onPick).toHaveBeenCalledWith([1, 3, 5]);
-    });
-
-    xit("should pick an empty array if source is empty", function () {
-
-        spyOn(source, "readArray").and.callFake(function (onRead) {
-
-            onRead([]);
-        });
-
-        bucket.pickArray(3, onPick);
-
-        expect(onPick).toHaveBeenCalledWith([]);
-    });
-});
-
 
 describe("WorkInProgressSource", function () {
 
@@ -321,7 +262,7 @@ describe("WorkInProgressSource", function () {
             workInProgressSource = new WorkInProgressSource(realTaskRecordSource, bowlFactory);
 
         bowlFactory.createBowl.and.returnValue(expectedBowl);
-        workInProgressSource.readArray(onReadComplete);
+        workInProgressSource.readBowl(onReadComplete);
 
         expect(expectedBowl.add).toHaveBeenCalledWith(1);
         expect(expectedBowl.add).toHaveBeenCalledWith(3);
@@ -353,7 +294,7 @@ describe("SimulationTaskSource", function () {
             simulationTaskSource = new SimulationTaskSource(realTaskRecordSource, bowlFactory);
 
         bowlFactory.createBowl.and.returnValue(expectedBowl);
-        simulationTaskSource.readArray(onReadComplete);
+        simulationTaskSource.readBowl(onReadComplete);
 
         expect(expectedBowl.add).toHaveBeenCalledWith(new SimulationTask(3));
         expect(expectedBowl.add).toHaveBeenCalledWith(new SimulationTask(1));

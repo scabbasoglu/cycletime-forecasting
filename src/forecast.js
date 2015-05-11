@@ -120,9 +120,9 @@ ScenarioGenerator.prototype.generate = function (onGenerationComplete) {
 
     var that = this;
 
-    this.workInProgressSource.readArray(function (workInProgressBowl) {
+    this.workInProgressSource.readBowl(function (workInProgressBowl) {
 
-        that.simulationTaskSource.readArray(function (simulationTaskBowl) {
+        that.simulationTaskSource.readBowl(function (simulationTaskBowl) {
 
             var maxWorkInProgress = workInProgressBowl.pick(),
                 simulationTaskArray = simulationTaskBowl.pickMultiple(that.amountOfStories),
@@ -173,33 +173,6 @@ Scenario.prototype.isComplete = function () {
     return isComplete;
 };
 
-// TODO: Will be replaced by Bowl
-function Bucket(randomPicker, source) {
-
-    this.randomPicker = randomPicker;
-    this.source = source;
-}
-
-Bucket.prototype.pick = function (onPick) {
-
-    var randomPicker = this.randomPicker;
-
-    this.source.readArray(function (bowl) {
-
-        onPick(bowl.pick());
-    });
-};
-
-Bucket.prototype.pickArray = function (arraySize, onPick) {
-
-    var randomPicker = this.randomPicker;
-
-    this.source.readArray(function (bowl) {
-
-        onPick(bowl.pickMultiple(arraySize));
-    });
-};
-
 function WorkInProgressSource(realTaskRecordSource, bowlFactory) {
 
     this.realTaskRecordSource = realTaskRecordSource;
@@ -207,7 +180,7 @@ function WorkInProgressSource(realTaskRecordSource, bowlFactory) {
 }
 
 // TODO: this is returning bowl not array. Should be renamed
-WorkInProgressSource.prototype.readArray = function (onReadComplete) {
+WorkInProgressSource.prototype.readBowl = function (onReadComplete) {
 
     var that = this;
     this.realTaskRecordSource.readRecordArray(function (realTaskRecordArray) {
@@ -289,7 +262,7 @@ function SimulationTaskSource(realTaskRecordSource, bowlFactory) {
 }
 
 // TODO: this is returning bowl not array. Should be renamed
-SimulationTaskSource.prototype.readArray = function (onReadComplete) {
+SimulationTaskSource.prototype.readBowl = function (onReadComplete) {
 
     var that = this;
     this.realTaskRecordSource.readRecordArray(function (realTaskRecordArray) {
