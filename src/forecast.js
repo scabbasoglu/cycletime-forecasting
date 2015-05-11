@@ -13,10 +13,11 @@ function runSimulation() {
         amountOfStories = parseInt($("#number-of-stories").val()),
         randomPicker = new RandomPicker(Math),
         googleSpreadSheet = new GoogleSpreadSheet(SPREAD_SHEET_KEY),
+        bowlFactory = new BowlFactory(randomPicker),
         realTaskRecordSource = new RealTaskRecordSource(googleSpreadSheet),
-        workInProgressSource = new WorkInProgressSource(realTaskRecordSource),
+        workInProgressSource = new WorkInProgressSource(realTaskRecordSource, bowlFactory),
         workInProgressBucket = new Bucket(randomPicker, workInProgressSource),
-        simulationTaskSource = new SimulationTaskSource(realTaskRecordSource),
+        simulationTaskSource = new SimulationTaskSource(realTaskRecordSource, bowlFactory),
         simulationTaskBucket = new Bucket(randomPicker, simulationTaskSource),
         scenarioGenerator = new ScenarioGenerator(Scenario, workInProgressBucket, simulationTaskBucket, amountOfStories),
         simulator = new Simulator(Simulation, scenarioGenerator, estimatedDays);
@@ -185,10 +186,9 @@ Bucket.prototype.pick = function (onPick) {
 
     var randomPicker = this.randomPicker;
 
-    this.source.readArray(function (sourceArray) {
+    this.source.readArray(function (bowl) {
 
-        var randomPick = randomPicker.pickFromArray(sourceArray);
-        onPick(randomPick);
+        onPick(bowl.pick());
     });
 };
 
@@ -196,55 +196,42 @@ Bucket.prototype.pickArray = function (arraySize, onPick) {
 
     var randomPicker = this.randomPicker;
 
-    this.source.readArray(function (sourceArray) {
+    this.source.readArray(function (bowl) {
 
-        if (sourceArray.length === 0) {
-
-            onPick([]);
-            return;
-        }
-
-        var pickIndex,
-            randomPick,
-            pickedArray = [];
-
-        for (pickIndex = 0; pickIndex < arraySize; pickIndex += 1) {
-
-            var randomPick = randomPicker.pickFromArray(sourceArray);
-            pickedArray.push(randomPick);
-        }
-
-        onPick(pickedArray);
+        onPick(bowl.pickMultiple(arraySize));
     });
 };
 
-function WorkInProgressSource(realTaskRecordSource) {
+function WorkInProgressSource(realTaskRecordSource, bowlFactory) {
 
     this.realTaskRecordSource = realTaskRecordSource;
+    this.bowlFactory = bowlFactory;
 }
 
 WorkInProgressSource.prototype.readArray = function (onReadComplete) {
 
+    var that = this;
     this.realTaskRecordSource.readRecordArray(function (realTaskRecordArray) {
 
-        var workInProgressArray = new WorkInProgressCalculator(realTaskRecordArray).calculate();
-        onReadComplete(workInProgressArray);
+        var workInProgressBowl = that.bowlFactory.createBowl();
+        new WorkInProgressCalculator(realTaskRecordArray, workInProgressBowl).fillBowl();
+        onReadComplete(workInProgressBowl);
     });
 };
 
-function WorkInProgressCalculator(realTaskRecordArray) {
+function WorkInProgressCalculator(realTaskRecordArray, bowl) {
 
     this.realTaskRecordArray = realTaskRecordArray;
-    this.workInProgressArray = [];
+    this.bowl = bowl;
     this.firstDate = null;
     this.lastDate = null;
 }
 
-WorkInProgressCalculator.prototype.calculate = function () {
+WorkInProgressCalculator.prototype.fillBowl = function () {
 
     var that = this;
     decideFirstAndLastDates();
-    return createWorkInProgressArray();
+    fillWorkInProgressBowl();
 
     function decideFirstAndLastDates() {
 
@@ -268,19 +255,16 @@ WorkInProgressCalculator.prototype.calculate = function () {
         that.lastWorkDay = lastWorkDay;
     }
 
-    function createWorkInProgressArray() {
+    function fillWorkInProgressBowl() {
 
-        var workInProgressArray = [],
-            workInProgressForDate,
+        var workInProgressForDate,
             workDay;
 
         for (workDay = that.firstWorkDay; workDay.smallerThan(that.lastWorkDay); workDay = workDay.getNextDay()) {
 
             workInProgressForDate = calculateWorkInProgress(workDay);
-            workInProgressArray.push(workInProgressForDate);
+            that.bowl.add(workInProgressForDate);
         }
-
-        return workInProgressArray;
     }
 
     function calculateWorkInProgress(dateToCalculate) {
@@ -299,24 +283,26 @@ WorkInProgressCalculator.prototype.calculate = function () {
     }
 }
 
-function SimulationTaskSource(realTaskRecordSource) {
+function SimulationTaskSource(realTaskRecordSource, bowlFactory) {
 
     this.realTaskRecordSource = realTaskRecordSource;
+    this.bowlFactory = bowlFactory;
 }
 
 SimulationTaskSource.prototype.readArray = function (onReadComplete) {
 
+    var that = this;
     this.realTaskRecordSource.readRecordArray(function (realTaskRecordArray) {
 
-        var simulationTaskArray = [];
+        var simulationTaskBowl = that.bowlFactory.createBowl();
 
         realTaskRecordArray.forEach(function (realTaskRecord) {
 
             var simulationTask = new SimulationTask(realTaskRecord.getCycleTime());
-            simulationTaskArray.push(simulationTask);
+            simulationTaskBowl.add(simulationTask);
         });
 
-        onReadComplete(simulationTaskArray);
+        onReadComplete(simulationTaskBowl);
     });
 };
 
