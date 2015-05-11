@@ -7,7 +7,7 @@ function initializePage() {
 
 function runSimulation() {
 
-    var AMOUNT_OF_SIMULATIONS = 600,
+    var AMOUNT_OF_SIMULATIONS = 1000,
         SPREAD_SHEET_KEY = "1b1P-4CYgJwleJuNgsylD7yPjyIFuMkL1ZSRsFKFdofg",
         estimatedDays = parseInt($("#estimated-days").val()),
         amountOfStories = parseInt($("#number-of-stories").val()),
@@ -108,6 +108,7 @@ Simulation.prototype.run = function () {
 };
 
 //TODO: This looks like shit. Try Promise pattern instead
+//TODO: If promise pattern simplifies scenario generator enough remove scenario generator completely
 function ScenarioGenerator(Scenario, workInProgressSource, simulationTaskSource, amountOfStories) {
 
     this.Scenario = Scenario;
@@ -179,7 +180,6 @@ function WorkInProgressSource(realTaskRecordSource, bowlFactory) {
     this.bowlFactory = bowlFactory;
 }
 
-// TODO: this is returning bowl not array. Should be renamed
 WorkInProgressSource.prototype.readBowl = function (onReadComplete) {
 
     var that = this;
@@ -261,7 +261,6 @@ function SimulationTaskSource(realTaskRecordSource, bowlFactory) {
     this.bowlFactory = bowlFactory;
 }
 
-// TODO: this is returning bowl not array. Should be renamed
 SimulationTaskSource.prototype.readBowl = function (onReadComplete) {
 
     var that = this;
