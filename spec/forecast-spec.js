@@ -206,14 +206,18 @@ describe("ScenarioGenerator", function () {
         var maxWorkInProgress = 3,
             amountOfStories = 5,
             simulationTaskArray = ["user-story-0", "user-story-1"],
+            workInProgressSource = jasmine.createSpyObj("workInProgressSource", ["readArray"]),
+            fakeBowl = jasmine.createSpyObj("workInProgressBowl", ["pick", "pickArray"]),
             fakeBucket = jasmine.createSpyObj("workInProgressBucket", ["pick", "pickArray"]),
             onGenerationComplete = jasmine.createSpy("onGenerationComplete"),
-            scenarioGenerator = new ScenarioGenerator(FakeScenario, fakeBucket, fakeBucket, amountOfStories);
+            scenarioGenerator = new ScenarioGenerator(FakeScenario, workInProgressSource, fakeBucket, amountOfStories);
 
-        fakeBucket.pick.and.callFake(function (onPickComplete) {
 
-            onPickComplete(maxWorkInProgress);
+        workInProgressSource.readArray.and.callFake(function (onReadComplete) {
+
+            onReadComplete(fakeBowl);
         });
+        fakeBowl.pick.and.returnValue(maxWorkInProgress);
 
         fakeBucket.pickArray.and.callFake(function (arraySize, onPickComplete) {
 

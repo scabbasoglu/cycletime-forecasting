@@ -16,10 +16,9 @@ function runSimulation() {
         bowlFactory = new BowlFactory(randomPicker),
         realTaskRecordSource = new RealTaskRecordSource(googleSpreadSheet),
         workInProgressSource = new WorkInProgressSource(realTaskRecordSource, bowlFactory),
-        workInProgressBucket = new Bucket(randomPicker, workInProgressSource),
         simulationTaskSource = new SimulationTaskSource(realTaskRecordSource, bowlFactory),
         simulationTaskBucket = new Bucket(randomPicker, simulationTaskSource),
-        scenarioGenerator = new ScenarioGenerator(Scenario, workInProgressBucket, simulationTaskBucket, amountOfStories),
+        scenarioGenerator = new ScenarioGenerator(Scenario, workInProgressSource, simulationTaskBucket, amountOfStories),
         simulator = new Simulator(Simulation, scenarioGenerator, estimatedDays);
 
     new Forecast(AMOUNT_OF_SIMULATIONS, simulator, displayForecast).calculate();
@@ -110,10 +109,10 @@ Simulation.prototype.run = function () {
 };
 
 //TODO: This looks like shit
-function ScenarioGenerator(Scenario, workInProgressBucket, simulationTaskBucket, amountOfStories) {
+function ScenarioGenerator(Scenario, workInProgressSource, simulationTaskBucket, amountOfStories) {
 
     this.Scenario = Scenario;
-    this.workInProgressBucket = workInProgressBucket;
+    this.workInProgressSource = workInProgressSource;
     this.simulationTaskBucket = simulationTaskBucket;
     this.amountOfStories = amountOfStories;
 }
@@ -122,10 +121,11 @@ ScenarioGenerator.prototype.generate = function (onGenerationComplete) {
 
     var that = this;
 
-    this.workInProgressBucket.pick(function (maxWorkInProgress) {
+    this.workInProgressSource.readArray(function (workInProgressBowl) {
 
         that.simulationTaskBucket.pickArray(that.amountOfStories, function (simulationTaskArray) {
 
+            var maxWorkInProgress = workInProgressBowl.pick();
             var scenario = new that.Scenario(maxWorkInProgress, simulationTaskArray);
             onGenerationComplete(scenario);
         });
@@ -173,8 +173,6 @@ Scenario.prototype.isComplete = function () {
     return isComplete;
 };
 
-
-
 // TODO: Will be replaced by Bowl
 function Bucket(randomPicker, source) {
 
@@ -208,6 +206,7 @@ function WorkInProgressSource(realTaskRecordSource, bowlFactory) {
     this.bowlFactory = bowlFactory;
 }
 
+// TODO: this is returning bowl not array. Should be renamed
 WorkInProgressSource.prototype.readArray = function (onReadComplete) {
 
     var that = this;
@@ -289,6 +288,7 @@ function SimulationTaskSource(realTaskRecordSource, bowlFactory) {
     this.bowlFactory = bowlFactory;
 }
 
+// TODO: this is returning bowl not array. Should be renamed
 SimulationTaskSource.prototype.readArray = function (onReadComplete) {
 
     var that = this;
