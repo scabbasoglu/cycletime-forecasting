@@ -207,11 +207,10 @@ describe("ScenarioGenerator", function () {
             amountOfStories = 5,
             simulationTaskArray = ["user-story-0", "user-story-1"],
             workInProgressSource = jasmine.createSpyObj("workInProgressSource", ["readArray"]),
-            fakeBowl = jasmine.createSpyObj("workInProgressBowl", ["pick", "pickArray"]),
-            fakeBucket = jasmine.createSpyObj("workInProgressBucket", ["pick", "pickArray"]),
+            simulationTaskSource = jasmine.createSpyObj("simulationTaskSource", ["readArray"]),
+            fakeBowl = jasmine.createSpyObj("workInProgressBowl", ["pick", "pickMultiple"]),
             onGenerationComplete = jasmine.createSpy("onGenerationComplete"),
-            scenarioGenerator = new ScenarioGenerator(FakeScenario, workInProgressSource, fakeBucket, amountOfStories);
-
+            scenarioGenerator = new ScenarioGenerator(FakeScenario, workInProgressSource, simulationTaskSource, amountOfStories);
 
         workInProgressSource.readArray.and.callFake(function (onReadComplete) {
 
@@ -219,14 +218,15 @@ describe("ScenarioGenerator", function () {
         });
         fakeBowl.pick.and.returnValue(maxWorkInProgress);
 
-        fakeBucket.pickArray.and.callFake(function (arraySize, onPickComplete) {
+        simulationTaskSource.readArray.and.callFake(function (onReadComplete) {
 
-            onPickComplete(simulationTaskArray);
+            onReadComplete(fakeBowl);
         });
+        fakeBowl.pickMultiple.and.returnValue(simulationTaskArray);
 
         scenarioGenerator.generate(onGenerationComplete);
 
-        expect(fakeBucket.pickArray).toHaveBeenCalledWith(amountOfStories, jasmine.anything());
+        expect(fakeBowl.pickMultiple).toHaveBeenCalledWith(amountOfStories);
         var generatedScenario = onGenerationComplete.calls.mostRecent().args[0];
         expect(generatedScenario.maxWorkInProgress).toBe(maxWorkInProgress);
         expect(generatedScenario.simulationTaskArray).toBe(simulationTaskArray);

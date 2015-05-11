@@ -17,8 +17,7 @@ function runSimulation() {
         realTaskRecordSource = new RealTaskRecordSource(googleSpreadSheet),
         workInProgressSource = new WorkInProgressSource(realTaskRecordSource, bowlFactory),
         simulationTaskSource = new SimulationTaskSource(realTaskRecordSource, bowlFactory),
-        simulationTaskBucket = new Bucket(randomPicker, simulationTaskSource),
-        scenarioGenerator = new ScenarioGenerator(Scenario, workInProgressSource, simulationTaskBucket, amountOfStories),
+        scenarioGenerator = new ScenarioGenerator(Scenario, workInProgressSource, simulationTaskSource, amountOfStories),
         simulator = new Simulator(Simulation, scenarioGenerator, estimatedDays);
 
     new Forecast(AMOUNT_OF_SIMULATIONS, simulator, displayForecast).calculate();
@@ -108,12 +107,12 @@ Simulation.prototype.run = function () {
     this.onSimulationComplete(isSuccessful);
 };
 
-//TODO: This looks like shit
-function ScenarioGenerator(Scenario, workInProgressSource, simulationTaskBucket, amountOfStories) {
+//TODO: This looks like shit. Try Promise pattern instead
+function ScenarioGenerator(Scenario, workInProgressSource, simulationTaskSource, amountOfStories) {
 
     this.Scenario = Scenario;
     this.workInProgressSource = workInProgressSource;
-    this.simulationTaskBucket = simulationTaskBucket;
+    this.simulationTaskSource = simulationTaskSource;
     this.amountOfStories = amountOfStories;
 }
 
@@ -123,10 +122,11 @@ ScenarioGenerator.prototype.generate = function (onGenerationComplete) {
 
     this.workInProgressSource.readArray(function (workInProgressBowl) {
 
-        that.simulationTaskBucket.pickArray(that.amountOfStories, function (simulationTaskArray) {
+        that.simulationTaskSource.readArray(function (simulationTaskBowl) {
 
-            var maxWorkInProgress = workInProgressBowl.pick();
-            var scenario = new that.Scenario(maxWorkInProgress, simulationTaskArray);
+            var maxWorkInProgress = workInProgressBowl.pick(),
+                simulationTaskArray = simulationTaskBowl.pickMultiple(that.amountOfStories),
+                scenario = new that.Scenario(maxWorkInProgress, simulationTaskArray);
             onGenerationComplete(scenario);
         });
     });
